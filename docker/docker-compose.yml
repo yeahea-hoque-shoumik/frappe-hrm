@@ -26,6 +26,8 @@ services:
       - SHELL=/bin/bash
       # Release branch for frappe, erpnext and hrms
       - FRAPPE_BRANCH=version-16
+      # Live updates (socket.io) port; keep in sync with the port mapping below
+      - SOCKETIO_PORT=2200
     working_dir: /home/frappe
     depends_on:
       mariadb:
@@ -38,7 +40,7 @@ services:
       - frappe-bench:/home/frappe/benches
     ports:
       - 2000:8000 # web
-      - 2002:2002 # socket.io (live updates); host and container port must match
+      - 2200:2200 # socket.io (live updates); host and container port must match
 
 volumes:
   mariadb-data:

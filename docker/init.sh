@@ -2,6 +2,7 @@
 set -e
 
 BRANCH="${FRAPPE_BRANCH:-version-16}"
+SOCKETIO_PORT="${SOCKETIO_PORT:-2200}"
 BENCHES=/home/frappe/benches
 SETUP_DONE="$BENCHES/.setup-complete"
 
@@ -12,6 +13,8 @@ cd "$BENCHES"
 if [ -f "$SETUP_DONE" ]; then
     echo "Bench already set up, starting"
     cd frappe-bench
+    # Apply on every start, so changing SOCKETIO_PORT needs no reinstall
+    bench set-config -g socketio_port "$SOCKETIO_PORT"
     exec bench start
 fi
 
@@ -30,7 +33,7 @@ bench set-redis-queue-host redis://redis:6379
 bench set-redis-socketio-host redis://redis:6379
 
 # The browser connects to socket.io on this port, so it must match the host port
-bench set-config -g socketio_port 2002
+bench set-config -g socketio_port "$SOCKETIO_PORT"
 
 # Remove redis, watch from Procfile
 sed -i '/redis/d' ./Procfile

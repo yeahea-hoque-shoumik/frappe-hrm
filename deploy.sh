@@ -2,14 +2,15 @@
 # Deploy Frappe HR with Docker: start the stack, wait for the site, finish the
 # setup wizard, load sample data, then follow the logs.
 #
-#   ./deploy.sh
+#   ./deploy.sh        (from the repository root)
 #
 # Override any setting below with an environment variable, for example:
 #   COMPANY_NAME="Northwind" COUNTRY="Bangladesh" CURRENCY="BDT" TIMEZONE="Asia/Dhaka" ./deploy.sh
 #
 # Safe to run again: steps that are already done are skipped.
 set -euo pipefail
-cd "$(dirname "$0")"
+# docker compose runs from the docker folder next to this script
+cd "$(dirname "$0")/docker"
 
 # ---- Settings ----
 COMPANY_NAME="${COMPANY_NAME:-Acme Demo}"

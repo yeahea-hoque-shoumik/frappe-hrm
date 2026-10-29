@@ -100,10 +100,10 @@ docker compose exec frappe bash /workspace/seed.sh
 
 #### One-step demo deploy
 
-`docker/deploy.sh` does all of the above: it starts the containers, waits for the site, finishes the setup wizard, loads the sample data and then follows the logs (Ctrl+C stops following; the app keeps running).
+`deploy.sh` in the repository root does all of the above: it starts the containers, waits for the site, finishes the setup wizard, loads the sample data and then follows the logs (Ctrl+C stops following; the app keeps running).
 
 ```
-cd hrms/docker
+cd hrms
 ./deploy.sh
 ```
 

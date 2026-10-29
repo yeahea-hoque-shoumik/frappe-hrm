@@ -1,16 +1,25 @@
-#!bin/bash
+#!/bin/bash
+set -e
 
-if [ -d "/home/frappe/frappe-bench/apps/frappe" ]; then
-    echo "Bench already exists, skipping init"
+BRANCH="${FRAPPE_BRANCH:-version-16}"
+BENCHES=/home/frappe/benches
+SETUP_DONE="$BENCHES/.setup-complete"
+
+# The named volume is created root-owned on first start
+sudo chown frappe:frappe "$BENCHES"
+cd "$BENCHES"
+
+if [ -f "$SETUP_DONE" ]; then
+    echo "Bench already set up, starting"
     cd frappe-bench
-    bench start
-else
-    echo "Creating new bench..."
+    exec bench start
 fi
 
-export PATH="${NVM_DIR}/versions/node/v${NODE_VERSION_DEVELOP}/bin/:${PATH}"
+# A previous attempt stopped half way; start over
+rm -rf frappe-bench
 
-bench init --skip-redis-config-generation frappe-bench
+echo "Creating new bench on $BRANCH..."
+bench init --skip-redis-config-generation --frappe-branch "$BRANCH" frappe-bench
 
 cd frappe-bench
 
@@ -20,12 +29,15 @@ bench set-redis-cache-host redis://redis:6379
 bench set-redis-queue-host redis://redis:6379
 bench set-redis-socketio-host redis://redis:6379
 
+# The browser connects to socket.io on this port, so it must match the host port
+bench set-config -g socketio_port 2002
+
 # Remove redis, watch from Procfile
 sed -i '/redis/d' ./Procfile
 sed -i '/watch/d' ./Procfile
 
-bench get-app erpnext
-bench get-app hrms
+bench get-app --branch "$BRANCH" erpnext
+bench get-app --branch "$BRANCH" hrms
 
 bench new-site hrms.localhost \
 --force \
@@ -39,4 +51,6 @@ bench --site hrms.localhost enable-scheduler
 bench --site hrms.localhost clear-cache
 bench use hrms.localhost
 
-bench start
+touch "$SETUP_DONE"
+
+exec bench start

@@ -83,12 +83,37 @@ cd hrms/docker
 docker-compose up
 ```
 
-Wait for some time until the setup script creates a site. After that you can access `http://localhost:8000` in your browser and the login screen for HR should show up.
+Wait for some time until the setup script creates a site. After that you can access `http://localhost:2000` in your browser and the login screen for HR should show up.
 
 Use the following credentials to log in:
 
 - Username: `Administrator`
 - Password: `admin`
+
+The setup installs the `version-16` release of Frappe, ERPNext and HRMS from GitHub (set `FRAPPE_BRANCH` in `docker-compose.yml` to change it). The site is kept in Docker volumes, so `docker compose down` and `up` keep your data; `docker compose down -v` deletes it.
+
+To load sample employees, leave, attendance, payroll and recruitment data, finish the setup wizard in the browser and then run:
+
+```
+docker compose exec frappe bash /workspace/seed.sh
+```
+
+#### One-step demo deploy
+
+`docker/deploy.sh` does all of the above: it starts the containers, waits for the site, finishes the setup wizard, loads the sample data and then follows the logs (Ctrl+C stops following; the app keeps running).
+
+```
+cd hrms/docker
+./deploy.sh
+```
+
+Company details default to a US company. Override them with environment variables, for example:
+
+```
+COMPANY_NAME="Northwind" COUNTRY="Bangladesh" CURRENCY="BDT" TIMEZONE="Asia/Dhaka" ./deploy.sh
+```
+
+Set `LOAD_SAMPLE_DATA=0` to skip the wizard and sample data and do them yourself in the browser. Running the script again skips steps that are already done.
 
 ### Local
 

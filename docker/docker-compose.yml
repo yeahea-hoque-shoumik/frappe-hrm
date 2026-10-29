@@ -1,14 +1,18 @@
-version: "3.8" # Updated version
 services:
   mariadb:
-    image: mariadb:10.8
+    image: mariadb:11.8
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --skip-character-set-client-handshake
-      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
     environment:
-      MYSQL_ROOT_PASSWORD: 123
+      MARIADB_ROOT_PASSWORD: 123
+      MARIADB_AUTO_UPGRADE: 1
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     volumes:
       - mariadb-data:/var/lib/mysql
 
@@ -20,12 +24,22 @@ services:
     command: bash /workspace/init.sh
     environment:
       - SHELL=/bin/bash
+      # Release branch for frappe, erpnext and hrms
+      - FRAPPE_BRANCH=version-16
     working_dir: /home/frappe
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - .:/workspace
+      # Keeps the bench (apps, site files, uploads) across `docker compose down`
+      - frappe-bench:/home/frappe/benches
     ports:
-      - 8000:8000
-      - 9000:9000
+      - 2000:8000 # web
+      - 2002:2002 # socket.io (live updates); host and container port must match
 
 volumes:
   mariadb-data:
+  frappe-bench:
